@@ -3,6 +3,9 @@ name: Terraform test
 on: 
   workflow_dispatch:
 
+permissions:
+  id-token: write
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -14,6 +17,12 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
 
+      - name: Configuration aws credenciales
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-regions: us-east-2
+
       - name: setup terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -23,8 +32,8 @@ jobs:
       - name: terraform validate
         run: terraform validate
 
-      - name: terraform apply
-        run: terraform apply -auto-approve -var="nombre=tecylabprueba"   
+      - name: terraform Plan
+        run: terraform plan -out=tfplan  
 
-      - name: validar
-        run: ls      
+      - name: terraform apply
+        run: terraform apply -auto-approve tfplan   
